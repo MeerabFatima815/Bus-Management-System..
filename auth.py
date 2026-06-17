@@ -1,18 +1,19 @@
-# ============================================================
 # FILE: auth.py
-# TOOLS USED:
-#   - passlib     : Password hashing library (bcrypt algorithm)
-#                   Never stores plain text passwords in the database
-# ============================================================
-
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import hashlib
+import os
 
 def hash_password(password: str) -> str:
-    """Convert plain text password to hashed version before storing."""
-    return pwd_context.hash(password)
+    password = password[:72]
+    salt = os.urandom(32)
+    key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+    return salt.hex() + ':' + key.hex()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Check if entered password matches the stored hashed password."""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        plain_password = plain_password[:72]
+        salt_hex, key_hex = hashed_password.split(':')
+        salt = bytes.fromhex(salt_hex)
+        key = hashlib.pbkdf2_hmac('sha256', plain_password.encode('utf-8'), salt, 100000)
+        return key.hex() == key_hex
+    except:
+        return False
