@@ -1,0 +1,227 @@
+<!--
+  FILE: buses.html  (Bus Management Page)
+  TOOLS USED:
+    - HTML5      : Table, modal forms
+    - CSS        : style.css
+    - JavaScript : Fetch API → POST/GET/PUT/DELETE /buses
+                   Modal open/close, toast notifications
+  FIX: No forced redirect. Error banner shown if backend is offline.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bus Management – BMS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">🚌 <span>BMS</span> Bus Management</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="buses.html" class="active">Buses</a>
+      <a href="bookings.html">Bookings</a>
+      <a href="login.html" class="btn-nav" id="navBtn">Login</a>
+    </div>
+  </nav>
+
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="sidebar-label">Main Menu</div>
+      <a href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+      <a href="buses.html" class="active"><span class="icon">🚌</span> Buses</a>
+      <a href="bookings.html"><span class="icon">🎫</span> Passengers & Bookings</a>
+    </div>
+
+    <div class="main-content">
+
+      <div class="page-header">
+        <h1>🚌 Bus Management</h1>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Add New Bus</button>
+      </div>
+
+      <!-- ERROR BANNER -->
+      <div id="errorBanner" style="display:none; background:#fce8e8; color:var(--danger); padding:1rem 1.2rem; border-radius:var(--radius); margin-bottom:1.2rem; font-size:0.9rem; font-weight:500;">
+        ⚠️ Cannot connect to backend. Run: <code>python run.py</code> in your backend folder first.
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by bus number or name..." oninput="loadBuses()" />
+        <button class="btn btn-primary" onclick="loadBuses()">Search</button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Bus Number</th><th>Bus Name</th><th>Capacity</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="busTable">
+              <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-light);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD BUS MODAL -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>🚌 Add New Bus</h2>
+        <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+      </div>
+      <div class="form-group"><label>Bus Number</label><input type="text" id="addBusNumber" placeholder="e.g. BUS-001" /></div>
+      <div class="form-group"><label>Bus Name</label><input type="text" id="addBusName" placeholder="e.g. City Express" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Capacity</label><input type="number" id="addCapacity" placeholder="e.g. 40" min="1" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="addStatus"><option>Active</option><option>Inactive</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="addBus()">Add Bus</button>
+    </div>
+  </div>
+
+  <!-- EDIT BUS MODAL -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>✏️ Edit Bus</h2>
+        <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+      </div>
+      <input type="hidden" id="editBusId" />
+      <div class="form-group"><label>Bus Number</label><input type="text" id="editBusNumber" /></div>
+      <div class="form-group"><label>Bus Name</label><input type="text" id="editBusName" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Capacity</label><input type="number" id="editCapacity" min="1" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="editStatus"><option>Active</option><option>Inactive</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="updateBus()">Update Bus</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = "http://localhost:8000";
+
+    // Update nav button if logged in
+    const userRaw = localStorage.getItem('bms_user');
+    if (userRaw) {
+      const btn = document.getElementById('navBtn');
+      btn.textContent = 'Logout';
+      btn.href = '#';
+      btn.addEventListener('click', () => { localStorage.removeItem('bms_user'); location.href = 'login.html'; });
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast ${type} show`;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function openAddModal() { document.getElementById('addModal').classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    async function loadBuses() {
+      const search = document.getElementById('searchInput').value.trim();
+      const tbody  = document.getElementById('busTable');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-light);">Loading...</td></tr>';
+      try {
+        const url   = search ? `${API}/buses?search=${encodeURIComponent(search)}` : `${API}/buses`;
+        const res   = await fetch(url);
+        if (!res.ok) throw new Error('Server error');
+        const buses = await res.json();
+        document.getElementById('errorBanner').style.display = 'none';
+
+        if (buses.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light);">No buses found. Click "+ Add New Bus" to get started.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = buses.map((b, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td><strong>${b.bus_number}</strong></td>
+            <td>${b.bus_name}</td>
+            <td>${b.capacity}</td>
+            <td><span class="badge ${b.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${b.status}</span></td>
+            <td style="display:flex;gap:0.4rem;">
+              <button class="btn btn-outline btn-sm" onclick='openEditModal(${b.bus_id},"${b.bus_number}","${b.bus_name}",${b.capacity},"${b.status}")'>✏️ Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteBus(${b.bus_id})">🗑️ Delete</button>
+            </td>
+          </tr>`).join('');
+      } catch {
+        document.getElementById('errorBanner').style.display = 'block';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--danger);">Cannot load buses — backend is offline.</td></tr>';
+      }
+    }
+
+    async function addBus() {
+      const body = {
+        bus_number: document.getElementById('addBusNumber').value.trim(),
+        bus_name:   document.getElementById('addBusName').value.trim(),
+        capacity:   parseInt(document.getElementById('addCapacity').value),
+        status:     document.getElementById('addStatus').value
+      };
+      if (!body.bus_number || !body.bus_name || !body.capacity) return showToast('Please fill all fields', 'error');
+      try {
+        const res  = await fetch(`${API}/buses`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed');
+        showToast('Bus added!'); closeModal('addModal');
+        document.getElementById('addBusNumber').value = '';
+        document.getElementById('addBusName').value   = '';
+        document.getElementById('addCapacity').value  = '';
+        loadBuses();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function openEditModal(id, num, name, cap, status) {
+      document.getElementById('editBusId').value     = id;
+      document.getElementById('editBusNumber').value = num;
+      document.getElementById('editBusName').value   = name;
+      document.getElementById('editCapacity').value  = cap;
+      document.getElementById('editStatus').value    = status;
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    async function updateBus() {
+      const id   = document.getElementById('editBusId').value;
+      const body = {
+        bus_number: document.getElementById('editBusNumber').value.trim(),
+        bus_name:   document.getElementById('editBusName').value.trim(),
+        capacity:   parseInt(document.getElementById('editCapacity').value),
+        status:     document.getElementById('editStatus').value
+      };
+      try {
+        const res = await fetch(`${API}/buses/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+        if (!res.ok) throw new Error('Update failed');
+        showToast('Bus updated!'); closeModal('editModal'); loadBuses();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteBus(id) {
+      if (!confirm('Delete this bus? All its bookings will also be removed.')) return;
+      try {
+        const res = await fetch(`${API}/buses/${id}`, { method:'DELETE' });
+        if (!res.ok) throw new Error('Delete failed');
+        showToast('Bus deleted!'); loadBuses();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    loadBuses();
+  </script>
+</body>
+</html>

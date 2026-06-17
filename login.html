@@ -1,0 +1,159 @@
+<!--
+  FILE: login.html  (Login / Register Page)
+  TOOLS USED:
+    - HTML5      : Form structure
+    - CSS        : Styled via style.css
+    - JavaScript : Fetch API to call backend /login and /register endpoints
+                   localStorage to save logged-in user info
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Bus Management System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-card">
+
+      <div class="logo-wrap">
+        <div class="logo-icon">🚌</div>
+        <h2>Bus Management System</h2>
+        <p style="font-size:0.82rem; color:var(--text-light); margin-top:0.3rem;">UMT OSSD Y9</p>
+      </div>
+
+      <!-- TAB SWITCHER -->
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+        <div class="auth-tab" onclick="switchTab('register')">Register</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="auth-form active" id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" />
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="loginUser()">
+          Login →
+        </button>
+        <p style="text-align:center; margin-top:1rem; font-size:0.83rem; color:var(--text-light);">
+          Don't have an account? <span style="color:var(--primary); cursor:pointer; font-weight:600;" onclick="switchTab('register')">Register here</span>
+        </p>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div class="auth-form" id="registerForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Create a password" />
+        </div>
+        <button class="btn btn-accent" style="width:100%; margin-top:0.5rem; color:var(--primary);" onclick="registerUser()">
+          Create Account →
+        </button>
+        <p style="text-align:center; margin-top:1rem; font-size:0.83rem; color:var(--text-light);">
+          Already have an account? <span style="color:var(--primary); cursor:pointer; font-weight:600;" onclick="switchTab('login')">Login here</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── CONFIG ─────────────────────────────────────────────────
+    // Change this to your Render backend URL after deployment
+    const API = "http://localhost:8000";
+
+    // ── TAB SWITCHER ───────────────────────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+      });
+      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+      document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+    }
+
+    // ── TOAST ──────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── LOGIN ──────────────────────────────────────────────────
+    async function loginUser() {
+      const email    = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) return showToast('Please fill all fields', 'error');
+
+      try {
+        const res = await fetch(`${API}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+        // Save user info in localStorage
+        localStorage.setItem('bms_user', JSON.stringify({ user_id: data.user_id, username: data.username }));
+        showToast(`Welcome back, ${data.username}!`);
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    }
+
+    // ── REGISTER ───────────────────────────────────────────────
+    async function registerUser() {
+      const username = document.getElementById('regName').value.trim();
+      const email    = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      if (!username || !email || !password) return showToast('Please fill all fields', 'error');
+
+      try {
+        const res = await fetch(`${API}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || 'Registration failed');
+
+        showToast('Account created! Please login.');
+        switchTab('login');
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    }
+
+    // Redirect if already logged in
+    if (localStorage.getItem('bms_user')) {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

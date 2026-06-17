@@ -1,0 +1,94 @@
+<!--
+  FILE: index.html  (Home Page)
+  TOOLS USED:
+    - HTML5      : Page structure and content
+    - CSS        : Styled via style.css
+    - JavaScript : Inline JS to check if user is logged in and update nav
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bus Management System – Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">🚌 <span>BMS</span> Bus Management</div>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="about.html">About</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="buses.html">Buses</a>
+      <a href="bookings.html">Bookings</a>
+      <a href="login.html" class="btn-nav" id="navLoginBtn">Login</a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>Modern <span>Bus Management</span><br/>Made Simple</h1>
+    <p>Manage buses, passengers, and bookings from one centralized platform. Built for transport companies, schools, and colleges.</p>
+    <div class="hero-btns">
+      <a href="login.html" class="btn btn-accent">Get Started →</a>
+      <a href="about.html" class="btn btn-outline" style="border-color:#fff; color:#fff;">Learn More</a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🚌</div>
+      <h3>Bus Management</h3>
+      <p>Add, update, and track all your buses in real time. Monitor capacity and status at a glance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <h3>Passenger Records</h3>
+      <p>Maintain complete passenger profiles with contact information and booking history.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎫</div>
+      <h3>Ticket Booking</h3>
+      <p>Book, view, and cancel tickets easily. Seat selection with instant confirmation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Dashboard Analytics</h3>
+      <p>Live statistics of total buses, passengers, and bookings at your fingertips.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Secure Login</h3>
+      <p>Role-based access with hashed password storage keeps your data protected.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Cloud Hosted</h3>
+      <p>Backend on Render, database on Supabase, frontend on Vercel — always online.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Bus Management System — University of Management and Technology &nbsp;|&nbsp; OSSD Y9</p>
+  </footer>
+
+  <script>
+    // If user is already logged in, change nav button
+    const user = localStorage.getItem('bms_user');
+    if (user) {
+      const btn = document.getElementById('navLoginBtn');
+      btn.textContent = 'Logout';
+      btn.href = '#';
+      btn.addEventListener('click', () => {
+        localStorage.removeItem('bms_user');
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>

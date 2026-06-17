@@ -1,0 +1,129 @@
+<!--
+  FILE: about.html  (About Page)
+  TOOLS USED:
+    - HTML5    : Page structure
+    - CSS      : Styled via style.css
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About – Bus Management System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">🚌 <span>BMS</span> Bus Management</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html" class="active">About</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="buses.html">Buses</a>
+      <a href="bookings.html">Bookings</a>
+      <a href="login.html" class="btn-nav">Login</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="about-hero">
+    <h1>About <span>Bus Management System</span></h1>
+    <p>A full-stack web application for OSSD Final Semester Project – UMT Y9</p>
+  </div>
+
+  <!-- ABOUT CONTENT -->
+  <div class="about-grid">
+
+    <div class="card">
+      <h3 class="section-title">📌 Problem Statement</h3>
+      <p style="font-size:0.9rem; color:var(--text-light); line-height:1.7;">
+        Many transport companies, schools, and colleges manage bus records manually. This leads to scheduling issues, booking errors, difficulty tracking passengers, and inefficient record management. This system automates all these operations.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">🎯 Project Objective</h3>
+      <p style="font-size:0.9rem; color:var(--text-light); line-height:1.7;">
+        Develop a web-based Bus Management System that allows administrators to manage buses, passengers, and bookings through a centralized, easy-to-use interface connected to a cloud PostgreSQL database.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">👥 Target Users</h3>
+      <ul style="font-size:0.9rem; color:var(--text-light); line-height:2;">
+        <li>🔑 <strong>Administrator</strong> – Full system access</li>
+        <li>🚌 <strong>Bus Manager</strong> – Manage buses and schedules</li>
+        <li>🎫 <strong>Passengers</strong> – Book and view tickets</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">⚙️ Technology Stack</h3>
+      <div class="tech-list">
+        <span class="tech-tag">FastAPI</span>
+        <span class="tech-tag">Python</span>
+        <span class="tech-tag">PostgreSQL</span>
+        <span class="tech-tag">SQLAlchemy</span>
+        <span class="tech-tag">Supabase</span>
+        <span class="tech-tag">HTML5</span>
+        <span class="tech-tag">CSS3</span>
+        <span class="tech-tag">JavaScript</span>
+        <span class="tech-tag">Render</span>
+        <span class="tech-tag">Vercel</span>
+        <span class="tech-tag">GitHub</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">📡 API Endpoints (16 total)</h3>
+      <ul style="font-size:0.85rem; color:var(--text-light); line-height:1.9;">
+        <li>POST /register &nbsp;|&nbsp; POST /login</li>
+        <li>POST /buses &nbsp;|&nbsp; GET /buses</li>
+        <li>GET /buses/{id} &nbsp;|&nbsp; PUT /buses/{id} &nbsp;|&nbsp; DELETE /buses/{id}</li>
+        <li>POST /passengers &nbsp;|&nbsp; GET /passengers</li>
+        <li>GET /passengers/{id} &nbsp;|&nbsp; PUT /passengers/{id} &nbsp;|&nbsp; DELETE /passengers/{id}</li>
+        <li>POST /bookings &nbsp;|&nbsp; GET /bookings &nbsp;|&nbsp; DELETE /bookings/{id}</li>
+        <li>GET /dashboard</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">🗄️ Database Schema</h3>
+      <ul style="font-size:0.85rem; color:var(--text-light); line-height:1.9;">
+        <li><strong>users</strong> – user_id, username, email, password</li>
+        <li><strong>buses</strong> – bus_id, bus_number, bus_name, capacity, status</li>
+        <li><strong>passengers</strong> – passenger_id, name, phone, email</li>
+        <li><strong>bookings</strong> – booking_id, passenger_id, bus_id, seat_number, booking_date</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">🚀 Deployment</h3>
+      <ul style="font-size:0.9rem; color:var(--text-light); line-height:2;">
+        <li>🌐 <strong>Frontend</strong> → Vercel</li>
+        <li>⚙️ <strong>Backend</strong> → Render</li>
+        <li>🗄️ <strong>Database</strong> → Supabase (PostgreSQL)</li>
+        <li>📦 <strong>Version Control</strong> → GitHub</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">📄 Project Info</h3>
+      <ul style="font-size:0.9rem; color:var(--text-light); line-height:2;">
+        <li>🏫 <strong>University</strong>: UMT – OSSD Y9</li>
+        <li>📅 <strong>Phase 1 Deadline</strong>: 6th June 2026</li>
+        <li>📅 <strong>Phase 2 Deadline</strong>: 19th June 2026</li>
+        <li>📅 <strong>Viva</strong>: 26th June 2026</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 Bus Management System — University of Management and Technology &nbsp;|&nbsp; OSSD Y9</p>
+  </footer>
+
+</body>
+</html>
