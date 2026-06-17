@@ -1,10 +1,5 @@
 <!--
   FILE: login.html  (Login / Register Page)
-  TOOLS USED:
-    - HTML5      : Form structure
-    - CSS        : Styled via style.css
-    - JavaScript : Fetch API to call backend /login and /register endpoints
-                   localStorage to save logged-in user info
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -74,15 +69,11 @@
     </div>
   </div>
 
-  <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
   <script>
-    // ── CONFIG ─────────────────────────────────────────────────
-    // Change this to your Render backend URL after deployment
-    const API = "http://localhost:8000";
+    const API = "https://bus-management-system-production-9059.up.railway.app";
 
-    // ── TAB SWITCHER ───────────────────────────────────────────
     function switchTab(tab) {
       document.querySelectorAll('.auth-tab').forEach((t, i) => {
         t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
@@ -91,7 +82,6 @@
       document.getElementById('registerForm').classList.toggle('active', tab === 'register');
     }
 
-    // ── TOAST ──────────────────────────────────────────────────
     function showToast(msg, type = 'success') {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -99,13 +89,10 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // ── LOGIN ──────────────────────────────────────────────────
     async function loginUser() {
       const email    = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
-
       if (!email || !password) return showToast('Please fill all fields', 'error');
-
       try {
         const res = await fetch(`${API}/login`, {
           method: 'POST',
@@ -113,10 +100,7 @@
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.detail || 'Login failed');
-
-        // Save user info in localStorage
         localStorage.setItem('bms_user', JSON.stringify({ user_id: data.user_id, username: data.username }));
         showToast(`Welcome back, ${data.username}!`);
         setTimeout(() => window.location.href = 'dashboard.html', 1000);
@@ -125,14 +109,11 @@
       }
     }
 
-    // ── REGISTER ───────────────────────────────────────────────
     async function registerUser() {
       const username = document.getElementById('regName').value.trim();
       const email    = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
-
       if (!username || !email || !password) return showToast('Please fill all fields', 'error');
-
       try {
         const res = await fetch(`${API}/register`, {
           method: 'POST',
@@ -140,9 +121,7 @@
           body: JSON.stringify({ username, email, password })
         });
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.detail || 'Registration failed');
-
         showToast('Account created! Please login.');
         switchTab('login');
       } catch (e) {
@@ -150,7 +129,6 @@
       }
     }
 
-    // Redirect if already logged in
     if (localStorage.getItem('bms_user')) {
       window.location.href = 'dashboard.html';
     }

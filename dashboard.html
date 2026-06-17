@@ -1,12 +1,3 @@
-<!--
-  FILE: dashboard.html  (Dashboard Page)
-  TOOLS USED:
-    - HTML5      : Page structure
-    - CSS        : Styled via style.css
-    - JavaScript : Fetch API → GET /dashboard and GET /buses
-                   localStorage to get logged-in user info
-  FIX: Removed hard redirect so you can test without login
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +8,6 @@
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">🚌 <span>BMS</span> Bus Management</div>
     <div class="nav-links">
@@ -31,8 +21,6 @@
   </nav>
 
   <div class="app-layout">
-
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-label">Main Menu</div>
       <a href="dashboard.html" class="active"><span class="icon">📊</span> Dashboard</a>
@@ -42,20 +30,12 @@
       <a href="login.html"><span class="icon">👤</span> Login / Register</a>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-
       <div class="page-header">
         <h1>📊 Dashboard</h1>
         <span style="font-size:0.9rem; color:var(--text-light);">Welcome, <strong id="userName">Guest</strong></span>
       </div>
 
-      <!-- ERROR BANNER (shown when backend is offline) -->
-      <div id="errorBanner" style="display:none; background:#fce8e8; color:var(--danger); padding:1rem 1.2rem; border-radius:var(--radius); margin-bottom:1.2rem; font-size:0.9rem; font-weight:500;">
-        ⚠️ Cannot connect to backend. Make sure you run: <code>python run.py</code> inside the backend folder.
-      </div>
-
-      <!-- STAT CARDS -->
       <div class="stats-grid">
         <div class="stat-card blue">
           <div class="stat-icon">🚌</div>
@@ -75,7 +55,6 @@
         </div>
       </div>
 
-      <!-- QUICK ACTIONS -->
       <div class="card" style="margin-bottom:1.5rem;">
         <h3 class="section-title">⚡ Quick Actions</h3>
         <div style="display:flex; gap:1rem; flex-wrap:wrap;">
@@ -85,15 +64,12 @@
         </div>
       </div>
 
-      <!-- RECENT BUSES TABLE -->
       <div class="card">
         <h3 class="section-title">🚌 Recent Buses</h3>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>#</th><th>Bus Number</th><th>Bus Name</th><th>Capacity</th><th>Status</th>
-              </tr>
+              <tr><th>#</th><th>Bus Number</th><th>Bus Name</th><th>Capacity</th><th>Status</th></tr>
             </thead>
             <tbody id="recentBusesTable">
               <tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:2rem;">Loading...</td></tr>
@@ -101,19 +77,14 @@
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
-  <footer>
-    <p>© 2026 Bus Management System — UMT OSSD Y9</p>
-  </footer>
+  <footer><p>© 2026 Bus Management System — UMT OSSD Y9</p></footer>
 
   <script>
-    // ── CONFIG: change this after deploying to Render ──────────
-    const API = "http://localhost:8000";
+    const API = "https://bus-management-system-production-9059.up.railway.app";
 
-    // ── SHOW USERNAME IF LOGGED IN ─────────────────────────────
     const userRaw = localStorage.getItem('bms_user');
     if (userRaw) {
       const user = JSON.parse(userRaw);
@@ -125,7 +96,6 @@
       document.getElementById('navBtn').href = 'login.html';
     }
 
-    // ── LOAD DASHBOARD STATS ───────────────────────────────────
     async function loadDashboard() {
       try {
         const res  = await fetch(`${API}/dashboard`);
@@ -135,28 +105,23 @@
         document.getElementById('statActiveBuses').textContent = data.active_buses;
         document.getElementById('statPassengers').textContent  = data.total_passengers;
         document.getElementById('statBookings').textContent    = data.total_bookings;
-        document.getElementById('errorBanner').style.display   = 'none';
       } catch {
-        document.getElementById('errorBanner').style.display = 'block';
         ['statBuses','statActiveBuses','statPassengers','statBookings'].forEach(id => {
           document.getElementById(id).textContent = '?';
         });
       }
     }
 
-    // ── LOAD RECENT BUSES ──────────────────────────────────────
     async function loadRecentBuses() {
       const tbody = document.getElementById('recentBusesTable');
       try {
         const res   = await fetch(`${API}/buses`);
         if (!res.ok) throw new Error();
         const buses = await res.json();
-
         if (buses.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light); padding:2rem;">No buses added yet. <a href="buses.html">Add one →</a></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">No buses yet. <a href="buses.html">Add one →</a></td></tr>';
           return;
         }
-
         tbody.innerHTML = buses.slice(0, 5).map((b, i) => `
           <tr>
             <td>${i + 1}</td>
@@ -164,10 +129,9 @@
             <td>${b.bus_name}</td>
             <td>${b.capacity}</td>
             <td><span class="badge ${b.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${b.status}</span></td>
-          </tr>
-        `).join('');
+          </tr>`).join('');
       } catch {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger); padding:2rem;">Could not load buses — backend offline.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:2rem;">Could not load buses.</td></tr>';
       }
     }
 

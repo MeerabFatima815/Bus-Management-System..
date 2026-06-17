@@ -1,11 +1,5 @@
 <!--
   FILE: buses.html  (Bus Management Page)
-  TOOLS USED:
-    - HTML5      : Table, modal forms
-    - CSS        : style.css
-    - JavaScript : Fetch API → POST/GET/PUT/DELETE /buses
-                   Modal open/close, toast notifications
-  FIX: No forced redirect. Error banner shown if backend is offline.
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -38,24 +32,16 @@
     </div>
 
     <div class="main-content">
-
       <div class="page-header">
         <h1>🚌 Bus Management</h1>
         <button class="btn btn-primary" onclick="openAddModal()">+ Add New Bus</button>
       </div>
 
-      <!-- ERROR BANNER -->
-      <div id="errorBanner" style="display:none; background:#fce8e8; color:var(--danger); padding:1rem 1.2rem; border-radius:var(--radius); margin-bottom:1.2rem; font-size:0.9rem; font-weight:500;">
-        ⚠️ Cannot connect to backend. Run: <code>python run.py</code> in your backend folder first.
-      </div>
-
-      <!-- SEARCH -->
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search by bus number or name..." oninput="loadBuses()" />
         <button class="btn btn-primary" onclick="loadBuses()">Search</button>
       </div>
 
-      <!-- TABLE -->
       <div class="card">
         <div class="table-wrap">
           <table>
@@ -68,7 +54,6 @@
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -114,9 +99,8 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const API = "http://localhost:8000";
+    const API = "https://bus-management-system-production-9059.up.railway.app";
 
-    // Update nav button if logged in
     const userRaw = localStorage.getItem('bms_user');
     if (userRaw) {
       const btn = document.getElementById('navBtn');
@@ -143,13 +127,10 @@
         const res   = await fetch(url);
         if (!res.ok) throw new Error('Server error');
         const buses = await res.json();
-        document.getElementById('errorBanner').style.display = 'none';
-
         if (buses.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light);">No buses found. Click "+ Add New Bus" to get started.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light);">No buses found.</td></tr>';
           return;
         }
-
         tbody.innerHTML = buses.map((b, i) => `
           <tr>
             <td>${i + 1}</td>
@@ -163,8 +144,7 @@
             </td>
           </tr>`).join('');
       } catch {
-        document.getElementById('errorBanner').style.display = 'block';
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--danger);">Cannot load buses — backend is offline.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--danger);">Cannot load buses.</td></tr>';
       }
     }
 
@@ -177,51 +157,4 @@
       };
       if (!body.bus_number || !body.bus_name || !body.capacity) return showToast('Please fill all fields', 'error');
       try {
-        const res  = await fetch(`${API}/buses`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Failed');
-        showToast('Bus added!'); closeModal('addModal');
-        document.getElementById('addBusNumber').value = '';
-        document.getElementById('addBusName').value   = '';
-        document.getElementById('addCapacity').value  = '';
-        loadBuses();
-      } catch (e) { showToast(e.message, 'error'); }
-    }
-
-    function openEditModal(id, num, name, cap, status) {
-      document.getElementById('editBusId').value     = id;
-      document.getElementById('editBusNumber').value = num;
-      document.getElementById('editBusName').value   = name;
-      document.getElementById('editCapacity').value  = cap;
-      document.getElementById('editStatus').value    = status;
-      document.getElementById('editModal').classList.add('active');
-    }
-
-    async function updateBus() {
-      const id   = document.getElementById('editBusId').value;
-      const body = {
-        bus_number: document.getElementById('editBusNumber').value.trim(),
-        bus_name:   document.getElementById('editBusName').value.trim(),
-        capacity:   parseInt(document.getElementById('editCapacity').value),
-        status:     document.getElementById('editStatus').value
-      };
-      try {
-        const res = await fetch(`${API}/buses/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-        if (!res.ok) throw new Error('Update failed');
-        showToast('Bus updated!'); closeModal('editModal'); loadBuses();
-      } catch (e) { showToast(e.message, 'error'); }
-    }
-
-    async function deleteBus(id) {
-      if (!confirm('Delete this bus? All its bookings will also be removed.')) return;
-      try {
-        const res = await fetch(`${API}/buses/${id}`, { method:'DELETE' });
-        if (!res.ok) throw new Error('Delete failed');
-        showToast('Bus deleted!'); loadBuses();
-      } catch (e) { showToast(e.message, 'error'); }
-    }
-
-    loadBuses();
-  </script>
-</body>
-</html>
+        const res  = await fetch(`${API}/buses`,
